@@ -1,0 +1,68 @@
+import math
+
+
+def haversine_dist(lat_1, long_1, lat_2, long_2):
+    '''
+    Calculate the haversine (crow's fly) distance between latitude/longitude pairs.
+
+    INPUT: latitude,longitude for the two locations
+    OUTPUT: the haversine distance between the two points given by the formula:
+        a = sin^2(delt_lat/2) + cos(lat1) * cos(lat2) * sin^2(delt_long/2)
+            a is the square of half the chord length between the points
+        c = 2 * atan2(sqrt(a),sqrt(1-a))
+        d = R * c
+        R is the Earth's radius -> approx 3,959 miles
+    Note: The angles need to be in radians to pass to the trig functions
+    example : haversine_dist(40.7564, -73.989, 40.6585, -73.7928)
+    '''
+    R = 3958.754641  # in miles
+    lat_1, lat_2, long_1, long_2 = map(math.radians, [lat_1, lat_2, long_1, long_2])
+    delt_lat = abs(lat_2 - lat_1)
+    delt_long = abs(long_2 - long_1)
+
+    a = (math.sin(.5 * delt_lat))**2 + math.cos(lat_1) * math.cos(lat_2) * (math.sin(.5 * delt_long))**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    # calculate the angular distnace in radians
+    d = R * c
+    return d
+
+
+def lat_dist(lat_1, lat_2):
+    '''
+    Calculate the manhattan distance between two latiude points by modifying the
+    haversine formula in order to convert from coordinates to miles.
+
+    INPUT: latitude coordinates for the two locations
+    OUTPUT: the absolute distance between two latitude points assuming a spherical earth.
+    Note: The angles need to be in radians to pass into the trig functions
+
+    '''
+    R = 3958.754641  # in miles
+    lat_1, lat_2 = map(math.radians, [lat_1, lat_2])
+    delt_lat = abs(lat_2 - lat_1)
+
+    lat_dist_a = (math.sin(.5 * delt_lat))**2
+    lat_dist_c = 2 * math.atan2(math.sqrt(lat_dist_a), math.sqrt(1 - lat_dist_a))
+    lat_dist = R * lat_dist_c
+
+    return abs(lat_dist)
+
+
+def long_dist(long_1, long_2):
+    '''
+    Calculate the manhattan distance between two longitude points by modifying the
+    haversine formula in order to convert from coordinates to miles.
+
+    INPUT: longitude coordinates for the two locations
+    OUTPUT: the absolute distance between two longitude points assuming a spherical earth.
+    Note: The angles need to be in radians to pass into the trig functions
+
+    '''
+    R = 3958.754641  # in miles
+    long_1, long_2 = map(math.radians, [long_1, long_2])
+    delt_long = abs(long_2 - long_1)
+
+    long_dist_a = (math.sin(.5 * delt_long))**2
+    long_dist_c = 2 * math.atan2(math.sqrt(long_dist_a), math.sqrt(1 - long_dist_a))
+    long_dist = R * long_dist_c
+    return abs(long_dist)
