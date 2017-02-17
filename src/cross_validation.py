@@ -67,8 +67,8 @@ def cross_validate(train, estimator, evaluator, train_ratio=.8):
     
     """
     param_grid = ParamGridBuilder()\
-        .addGrid(rf.numTrees, [50, 100]) \
-        .addGrid(rf.maxDepth, [False, True])\
+        .addGrid(rf.numTrees, [20, 50, 100]) \
+        .addGrid(rf.maxDepth, [5, 10, 15])\
         .build()
 
     tvs = TrainValidationSplit(estimator=estimator,
