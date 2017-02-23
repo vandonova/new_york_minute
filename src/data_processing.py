@@ -1,5 +1,5 @@
 from distance_funcs import haversine_dist
-from pyspark.sql.functions import udf
+from pyspark.sql.functions import udf, abs
 from pyspark.sql.types import DoubleType
 
 
@@ -23,10 +23,10 @@ def remove_outliers(df, column, train=True, train_mean=None, train_std=None):
     if train:
         samp_mean = df.agg({column: 'mean'}).collect()[0]['avg(' + column + ')']
         samp_std = df.agg({column: 'std'}).collect()[0]['stddev(' + column + ')']
-        clean_df = df.filter(lambda x: math.fabs(x - samp_mean) < 10 * samp_std)
-        return clean_df, samp_meam, samp_std
+        clean_df = df.filter(abs(df[column] - samp_mean) < 10 * samp_std)
+        return clean_df, samp_mean, samp_std
     else:
-        clean_df = df.filter(lambda x: math.fabs(x - train_mean) < 10 * train_std)
+        clean_df = df.filter(abs(df[column] - train_mean) < 10 * train_std)
         return clean_df
 
 
@@ -43,16 +43,16 @@ def clean_data(df):
         df (DataFrame)
 
     '''
-    # filter out negative
+    # Filter out negatives
     df = df.filter(df.min_duration > 0)
 
     haversine_udf = udf(lambda lat1, long1, lat2, long2: haversine_dist(lat1, long1, lat2, long2), DoubleType())
-    # haversine with same longs is lat distance
+    # Haversine with same longs is lat distance
     lat_dist_udf = udf(lambda lat1, lat2: haversine_dist(lat1, 0, lat2, 0), DoubleType())
-    # haversine with same lats is long distance
+    # Haversine with same lats is long distance
     long_dist_udf = udf(lambda long1, long2: haversine_dist(0, long1, 0, long2), DoubleType())
 
-    # create columns for each distance metric
+    # Create columns for each distance metric
     df = df.withColumn('haversine_dist', haversine_udf(df.dropoff_latitude, df.dropoff_longitude, df.pickup_latitude, df.pickup_longitude))
     df = df.withColumn('lat_dist', lat_dist_udf(df.dropoff_latitude, df.pickup_latitude))
     df = df.withColumn('long_dist', long_dist_udf(df.dropoff_longitude, df.pickup_longitude))
